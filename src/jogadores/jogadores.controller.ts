@@ -31,7 +31,6 @@ export class JogadoresController {
     @Body() atualizarJogadorDto: AtualizarJogadorDto,
     @Param('_id', JogadoresValidacaoParametrosPipe) _id: string,
   ): Promise<void> {
-    console.log("Opaaaa");
     await this.jogadoresService.atualizarJogador(_id, atualizarJogadorDto);
   }
 

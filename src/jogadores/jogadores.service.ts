@@ -38,8 +38,6 @@ export class JogadoresService {
     _id: string,
     atualizarJogadorDto: AtualizarJogadorDto,
   ): Promise<void> {
-    this.logger.log("Opaaaa");
-
     const jogadorEncontrado = await this.jogadorModel.findOne({ _id }).exec();
 
     if (!jogadorEncontrado) {
