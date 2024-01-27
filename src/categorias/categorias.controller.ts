@@ -27,7 +27,7 @@ export class CategoriasController {
   }
 
   @Get()
-  async consultarCategorias(): Promise<Categoria[]> {
+  async consultarCategorias(): Promise<Array<Categoria>> {
     return this.categoriasService.consultarCategorias();
   }
 
@@ -46,5 +46,12 @@ export class CategoriasController {
     @Param('_id', CategoriasValidacaoParametrosPipe) _id: string,
   ): Promise<void> {
     await this.categoriasService.atualizarCategoria(_id, atualizarCategoriaDto);
+  }
+
+  @Put('/:_id/jogadores/:jogadorId')
+  async atribuirCategoriaJogador(
+    @Param(CategoriasValidacaoParametrosPipe) params: Array<string>,
+  ): Promise<void> {
+    await this.categoriasService.atribuirCategoriaJogador(params);
   }
 }

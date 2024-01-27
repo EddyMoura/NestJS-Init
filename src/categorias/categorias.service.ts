@@ -10,11 +10,13 @@ import { Model } from 'mongoose';
 import { Categoria } from './Interfaces/categoria.interface';
 import { CriarCategoriaDto } from './dto/criar-categoria.dto';
 import { AtualizarCategoriaDto } from './dto/atualizar-categoria.dto';
+import { JogadoresService } from 'src/jogadores/jogadores.service';
 
 @Injectable()
 export class CategoriasService {
   constructor(
     @InjectModel('Categoria') private readonly categoriaModel: Model<Categoria>,
+    private readonly jogadoresService: JogadoresService,
   ) {}
 
   private readonly logger = new Logger(CategoriasService.name);
@@ -38,8 +40,8 @@ export class CategoriasService {
     return categoriaCriada;
   }
 
-  async consultarCategorias(): Promise<Categoria[]> {
-    return this.categoriaModel.find().exec();
+  async consultarCategorias(): Promise<Array<Categoria>> {
+    return this.categoriaModel.find().populate('jogadores').exec();
   }
 
   async consultarCategoriaPorId(_id: string): Promise<Categoria> {
@@ -56,6 +58,37 @@ export class CategoriasService {
 
     await this.categoriaModel
       .findByIdAndUpdate(_id, { $set: atualizarCategoriaDto })
+      .exec();
+  }
+
+  async atribuirCategoriaJogador(params: Array<string>): Promise<void> {
+    const categoriaId = params['_id'];
+    const jogadorId = params['_id'];
+
+    const categoriaEncontrada = await this.encontrarCategoria(categoriaId);
+
+    this.logger.log(
+      `Categoria econtrada: ${JSON.stringify(categoriaEncontrada)}`,
+    );
+
+    const jogadorJaCadastradoCategoria = await this.categoriaModel
+      .find(categoriaId)
+      .where('jogadores')
+      .in(jogadorId)
+      .exec();
+
+    await this.jogadoresService.consultarJogadorPorId(jogadorId);
+
+    if (jogadorJaCadastradoCategoria.length > 0) {
+      throw new BadRequestException(
+        `Jogador ${jogadorId} já cadastrado na categoria de id: ${categoriaId}`,
+      );
+    }
+
+    categoriaEncontrada.jogadores.push(jogadorId);
+
+    await this.categoriaModel
+      .findByIdAndUpdate(categoriaId, { $set: categoriaEncontrada })
       .exec();
   }
 
